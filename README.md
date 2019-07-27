@@ -26,9 +26,11 @@
 | Class Name                        | What I learned                                   | 
 | :--------------------- | ---------------------------------------- | 
 |GLM| Agresti, A. Foundations of linear and generalized linear models| 
+||[Final Project](https://github.com/serah1107/Statistics-Graduate/tree/master/2018-02%20Class/GLM/final%20project)
 |Machine Learning| Clustering, Image Processing and so on| 
 |Financial Engineering| pythondatasciencehandbook  | 
 ||[LSTM,RNN,Tensorboard and so on ](https://github.com/serah1107/Statistics-Graduate/tree/master/2018-02%20Class/Financial%20Engineering)|
+||[Final Project](https://github.com/serah1107/Statistics-Graduate/blob/master/2018-02%20Class/Financial%20Engineering/Final%20Project%20CIFAR10.ipynb)|
 |Theoretical Statistics2| 1. [Demand Prediction](https://pphonyohyeyun.shinyapps.io/demand_ohy/)|
 ||2. Non-life insurance Price|
 ||3. Life Insurance Pension|
@@ -60,7 +62,6 @@
 ||9. Quantile Regression|
 ||10. Multi Dimensional Scaling|
 || [Final Project](https://github.com/serah1107/Statistics-Graduate/blob/master/2019-03%20Class/Bayesian/project/DengAI%20Spread%20Prediction%20Using%20BNN%20%26%20Bayesian%20Quantile%20Regression.R) | 
-
 |Data Mining| [ISLR](https://github.com/serah1107/Statistics-Graduate/tree/master/2019-03%20Class/Data%20Mining/ISLR_HW) | 
 || [Final Project](https://github.com/serah1107/Statistics-Graduate/tree/master/2019-03%20Class/Data%20Mining/NAVER%20Webtoon%20Popularity%20Prediction%20(Team%20Project)| 
 |Text Mining| | 
