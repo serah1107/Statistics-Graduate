@@ -1,0 +1,97 @@
+---
+title: "HW#8_PART2"
+author: "182STG12 "
+date: "2018년 5월 14일"
+output: html_document
+---
+
+```{r,WARNING=FALSE}
+
+#Part2: Poisson Change Point Problem
+
+library(rjags)
+library(runjags)
+library(optimx)
+
+dat2<-read.csv("C:/Users/LEEEUNJIN/Desktop/2018-1/대학원/이론통계학1/8주차/Mining-Accidents-CPA.csv") 
+colnames(dat2)<-c("t","y","t=1888")
+t<-dat2$t
+y<-dat2$y
+plot(t,y)
+
+##(a) using jags 
+
+## Likelihood function : L
+  example_dat2 <- "model{
+  for(i in 1:length(y)) {
+    y[i] ~ dpois(mu[i])
+   }
+## prior distribution for parameters 
+   a~dunif(0.5,6)
+   b~dunif(0.5,4)
+   c~dunif(1880,1930)
+   for(i in 1:length(t)) {
+   mu[i]<-exp(a-b*ifelse((t[i]-c)>=0,1,0))
+   }
+ }"
+
+#### Running the model in JAGS
+
+model1 <- jags.model(textConnection(example_dat2), data = list(y = y,t=t),
+                               n.chains = 3, n.adapt= 2000)
+
+update(model1, 1000); ## Burnin for 1500 samples
+mcmc_samples <- coda.samples(model1, variable.names=c("a", "b","c"), 
+                                        n.iter=2000, thin=10)
+plot(mcmc_samples) 
+plot(mcmc_samples,type="h") 
+autocorr.plot(mcmc_samples[,3])
+
+##(b) Bayesian Credible interval
+
+summary(mcmc_samples)
+
+
+##(c) Compare with MLE & Bootstrap
+
+###MLE
+attach(dat2)
+
+f2<-function(d,y) { 
+  mu<-c()
+ for(i in 1: length(y)){
+  a<-d[1]
+  b<-d[2]
+  c<-d[3]
+  mu[i]<-exp(a-b*ifelse((t[i]-c)>=0,1,0))
+}
+ sum(dpois(y,mu,log=TRUE))
+}
+
+opt2<- optim(par = c(1,1,1890),fn=f2,y=y, method= "BFGS", hessian=T,control = list(fnscale=-1))
+opt2$par
+
+###Bootstrap
+
+B<-1000
+para_boot <- matrix(0, ncol = 3, nrow = B)
+mleval<-opt2$par
+
+for (i in 1:B){
+  y_star <- c(0)
+  for (j in 1:length(y)){
+    a<-mleval[1]; b<-mleval[2]; c<-mleval[3]
+    y_star[j] <- rpois(1,exp(a-b*ifelse(t[j]-c >= 0,1,0)))
+  }
+  para_boot[i,] <- optim(mleval,f2, y = y_star, control = list(fnscale = -1) )$par
+} 
+colnames(para_boot) <-c('a','b','c')
+head(para_boot); tail(para_boot)
+
+mean(para_boot[,1]);mean(para_boot[,2]);mean(para_boot[,3])
+sort(para_boot[,1])[c(26,975)]
+sort(para_boot[,2])[c(26,975)]
+sort(para_boot[,3])[c(26,975)]
+
+
+```

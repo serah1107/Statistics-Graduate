@@ -1,0 +1,90 @@
+---
+title: "Homework#7-Part1"
+author: "Hye Yun Oh"
+date: "2018³â 5¿ù 6ÀÏ"
+output: html_document
+---
+
+```{r,warning=FALSE,message=FALSE}
+#Part1 : APT 
+
+##library
+
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+library(leaps)
+
+##data manipulation
+
+dat1<-read_excel("C:\\Users\\user\\Desktop\\APT-Antoine-Mark-Recapture data (2).xlsx",sheet=1)
+dat1<-dat1[c(1:236),c(3,16,14,15,13,7:8)]
+colnames(dat1)<-c("y","x1","x21","x22","x3","x4","x5")
+dat1<-mutate(dat1,lny=log(as.numeric(y)))
+
+##scatter plot (a)
+
+g1<-ggplot(data=dat1,aes(y=x1,x=y))+geom_point(alpha=0.3)
+g2<-ggplot(data=dat1,aes(y=x21,x=y))+geom_point(alpha=0.3)
+g3<-ggplot(data=dat1,aes(y=x22,x=y))+geom_point(alpha=0.3)
+g4<-ggplot(data=dat1,aes(y=x3,x=y))+geom_point(alpha=0.3)
+g5<-ggplot(data=dat1,aes(y=x4,x=y))+geom_point(alpha=0.3)
+g6<-ggplot(data=dat1,aes(y=x5,x=y))+geom_point(alpha=0.3)
+g7<-ggplot(data=dat1,aes(y=x1,x=lny))+geom_point(alpha=0.3)
+g8<-ggplot(data=dat1,aes(y=x21,x=lny))+geom_point(alpha=0.3)
+g9<-ggplot(data=dat1,aes(y=x22,x=y))+geom_point(alpha=0.3)
+g10<-ggplot(data=dat1,aes(y=x3,x=lny))+geom_point(alpha=0.3)
+g11<-ggplot(data=dat1,aes(y=x4,x=lny))+geom_point(alpha=0.3)
+g12<-ggplot(data=dat1,aes(y=x5,x=lny))+geom_point(alpha=0.3)
+
+g1
+g2
+g3
+g4
+g5
+g6
+g7
+g8
+g9
+g10
+g11
+g12
+```
+```{r,warning=FALSE,message=FALSE}
+##Prediction model and Normal QQ-plot of y (b)
+
+ggplot(data=dat1,aes(y=x4,x=x3))+geom_point(alpha=0.3)  ##slight linear relationship so add x4*x3
+full1_1<-lm(y~x1+x21+x22+x3+x4+x5+x4*x5+x4*x3,data=dat1)
+back1_1<-step(full1_1,direction="backward")
+summary(back1_1)            ###backward elimination
+best.subset<-regsubsets(y~x1+x21+x22+x3+x4+x5+x4*x5+x4*x3,data=dat1,nvmax=7)
+which.max(summary(best.subset)$adjr2)  ##best subset regression:the best model is with 6 variables
+which.min(summary(best.subset)$cp)    ##Cp (the best model is with 4 variables)
+which.min(summary(best.subset)$bic)  ##BIC(the best model is with 3 variables)
+reduced1_1<-lm(y~x3+x4+x5+x4*x5,data=dat1) ###reduced model with 4 variables 
+qqnorm(resid(reduced1_1))
+qqline(resid(reduced1_1))
+```
+```{r,warning=FALSE,message=FALSE}
+##Prediction model and Normal QQ-plot of lny (c)
+
+dat1_1<-as.data.frame(dat1[,-1])  ### eliminate y 
+full1_2<-lm(lny~x1+x21+x22+x3+x4+x5+x4*x5+x4*x3,data=dat1_1)
+summary(full1_2)
+back1_2<-step(full1_2,direction="backward")
+summary(back1_2)           
+best.subset2<-regsubsets(lny~x1+x21+x22+x3+x4+x5+x4*x5+x4*x3,data=dat1_1,nvmax=7)
+which.max(summary(best.subset2)$adjr2)  ##best subset regression:the best model is with 7 variables
+which.min(summary(best.subset2)$cp)    ##Cp (the best model is with 7 variables)
+which.min(summary(best.subset2)$bic)   ##BIC(the best model is with 5 variables)
+reduced1_2<-lm(lny~x1+x21+x3+x4+x5+x4*x5+x4*x3,data=dat1_1)
+qqnorm(resid(reduced1_2))
+qqline(resid(reduced1_2))
+```
+```{r,warning=FALSE,message=FALSE}
+##AIC of y,lny and selection (d)
+
+AIC(reduced1_1)
+AIC(reduced1_2)
+summary(reduced1_2)
+```
