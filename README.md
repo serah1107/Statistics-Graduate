@@ -8,6 +8,10 @@
 |Linear Regression | | 
 |Theoretical Statistics| | 
 
+
+##
+
+
 > ### 2018-02 Classes
 
 | Class Name                        | What I learned                                   | 
@@ -17,6 +21,9 @@
 |Theoretical Statistics2| | 
 |GLM| | 
 
+
+
+##
 
 > ### 2019-01 Classes
 
