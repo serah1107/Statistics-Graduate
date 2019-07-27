@@ -1,0 +1,141 @@
+---
+title: "HW#10"
+author: "Hye Yun Oh"
+date: "2018년 5월 29일"
+output: html_document
+---
+
+```{r,warning=FALSE}
+#PART1 : 
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(MASS)
+library(bestglm)
+library(car)
+
+dat1<-read_excel("C:\\Users\\user\\Desktop\\lungcancer-yieldcurve.xlsx",sheet=1)
+colnames(dat1)<-c("x1","x2","n","y")
+dat1<-mutate(dat1,ybar=y/n,lnybar=log(ybar),a=(37+5*x1))
+
+##(a)
+g1<-ggplot(data=dat1,aes(x=lnybar,y=a))+geom_point(alpha=0.3)
+g2<-ggplot(data=dat1,aes(x=lnybar,y=log(a)))+geom_point(alpha=0.3)
+g3<-ggplot(data=dat1,aes(x=lnybar,y=x2))+geom_point(alpha=0.3)
+
+g1  ###나이가 들수록 폐암 사망수가 증가하는 것을 알 수 있다.
+g2  ###위의 그림과 같은 의미를 가지지만 비율적으로 좀 더 자세하게 알 수 있다.
+g3  ###흡연/비흡연 사람마다 폐암 사망수가 어떻게 되는지 알 수 있다. status 1,2에 비해  3,4가 오른쪽으로 더 치우친 모습을 보여, 흡연자의 경우에 폐암 사망 비율이 증가하는 것을 알 수 있다.
+
+##(b)
+glm1_1<-glm(y~log(n)+log(a)+factor(x2) , family = poisson, data=dat1) 
+glm1_2<-glm(y~log(n)+factor(x1)+factor(x2) , family = poisson, data=dat1)
+summary(glm1_1)
+summary(glm1_2)
+
+ggplot(glm1_1,aes(fitted.values(glm1_1),residuals(glm1_1)))+geom_point()
+ggplot(glm1_2,aes(fitted.values(glm1_2),residuals(glm1_2)))+geom_point()
+###H1모형이 잔차가 더 랜덤하게 분포하고 AIC가 더 작기 때문에 H1모형이 더 적절하다고 보여진다.
+
+##(c)
+out <- glm(y~offset(log(n))+log(a)+factor(x2),family="poisson",data=dat1)
+anova(out,test="Chisq")
+###성립한다고 보여진다.
+
+##(d)
+out$deviance
+ggplot(out,aes(fitted.values(out),residuals(out)))+geom_point()
+qqnorm(residuals.glm(out,type="deviance"))
+abline(a=0,b=1)
+qqnorm(residuals.glm(out,type="pearson"))
+abline(a=0,b=1)
+###정규성을 만족한다. 따라서, 모형이 적합하다.
+
+##(e)
+boxCox(out, family="yjPower",lambda=seq(0,1,0.01))
+which.max(boxCox(out, family="yjPower",lambda=seq(0,1,0.01))$y)
+boxCox(out, family="yjPower",lambda=seq(0,1,0.01))$x[46]
+sq<-boxCox(out, family="yjPower",lambda=seq(0,1,0.01))$x[46]
+dat1<-mutate(dat1,logasq=log(a)^sq)
+out1<-glm(y~offset(log(n))+logasq+factor(x2),family="poisson",data=dat1)
+out2<-glm(y~offset(log(n))+logasq+factor(x2)+logasq*factor(x2),family="poisson",data=dat1)
+stepAIC(out2, direction="both",steps=5)
+###out1 model 선택 
+
+##(f)
+loglm<-glm(cbind(y,n-y)~log(n)+logasq+factor(x2), family= binomial,data=dat1) 
+loglm
+###poisson의 경우 overdispersion 문제가 생긴다.
+
+#PART2: 
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(MASS)
+library(bestglm)
+dat2<-read_excel("C:\\Users\\user\\Desktop\\lungcancer-yieldcurve.xlsx",sheet=2)
+colnames(dat2)<-c("pot","x","block","z","y")
+dat2<-mutate(dat2,mu=mean(y),xinv=1/x)
+
+##(a)
+g4<-ggplot(data=dat2,aes(x=x,y=y))+geom_point(alpha=0.3)
+g5<-ggplot(data=dat2,aes(x=x,y=y/x))+geom_point(alpha=0.3)
+g6<-ggplot(data=dat2,aes(x=x,y=x/y))+geom_point(alpha=0.3)
+
+g4 ###보리숫자가 적을 때, 수확량은 다양하게 나오고, 보리숫자가 증가할 수록 수확량은 많다.
+g5 ###보리숫자 당 수확량은 보리 숫자가 적을 때 다양하게 나온다.  
+g6 ###단위 면적 당 보리숫자와 수확량별 보리숫자는 비례한다. 
+
+##(b)
+glm2_1<-glm(y~xinv , family = "Gamma", data=dat2)
+glm2_1
+
+beta0<-as.numeric(glm2_1$coefficients[1])
+beta1<-as.numeric(glm2_1$coefficients[2])
+alpha<-mean(dat2$y)/(var(dat2$y)/mean(dat2$y))
+
+attach(dat2)
+loglike <- function(data,b){
+mu <-x/(b[3]-b[2]*x)
+s<-sum(mu)/b[1]
+-sum(dgamma(y,shape=b[1],scale=s,log=TRUE))
+}
+
+loglike <- function(data,b){
+mu<-c()
+s<-c()
+for(i in 1: length(x)){
+mu[i] <-x[i]/(b[3]-b[2]*x[i])
+s[i]<-mu[i]/b[1]
+}
+-sum(dgamma(y,shape=b[1],scale=s,log=TRUE))
+}
+
+opt1<- optim(par = c(10,-1,0),data=dat2, fn=loglike, method= "BFGS", hessian=T,control = list(fnscale=-1))
+opt1
+confint(glm2_1)
+
+##(c)
+dat2<-mutate(dat2,xk=beta0+beta1*x)
+ggplot(data=dat2,aes(x=xk,y=y))+geom_smooth()+geom_point(aes(x=x,y=y))
+
+##(d)
+glm2_2<-glm(y~1/x+I(block)/x+I(block)+x , family = "Gamma", data=dat2)
+glm2_2
+stepAIC(glm2_2, direction="both",steps=5)
+final<-glm(y ~ x, family = "Gamma", data=dat2)
+confint(final)
+
+##(e)
+
+##(f)
+ggplot(data=dat2,aes(x=x,y=z/x))+geom_point()
+##파종한 씨앗의 수가 적을수록 열매를 맺는 씨앗의 수가 많다. 
+
+##(g)
+loglm1<-glm(cbind(z,x-z)~block+block*x+x, family= binomial,data=dat2) 
+loglm1
+
+```
+
+
