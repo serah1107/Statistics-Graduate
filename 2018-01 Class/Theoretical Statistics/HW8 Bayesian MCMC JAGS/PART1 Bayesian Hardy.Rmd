@@ -1,0 +1,105 @@
+---
+title: "HW#8_Part1_182STG12¿ÀÇýÀ±"
+author: "Hye Yun Oh"
+date: "2018³â 5¿ù 14ÀÏ"
+output: html_document
+---
+
+```{r, warning=FALSE}
+
+#Part1 : Hardy-Weinberg Model
+
+library(optimx)
+
+dat1<-read.csv(file.choose(),header=T) 
+colnames(dat1)<-c("type","n")
+
+
+##(a) Metropolis Algorithm
+
+attach(dat1) 
+f1<-function(data, b) { 
+
+ n<-data$n
+ p1<- (1-b[1]-b[2])^2
+ p2<- b[1]^2+2*b[1]*(1-b[1]-b[2])
+ p3<- b[2]^2+2*b[2]*(1-b[1]-b[2])
+ p4<- 2*b[1]*b[2]
+ l<-sum(log(p1)*n[1]+log(p2)*n[2]+log(p3)*n[3]+log(p4)*n[4])
+ l
+}
+
+like<-function(data, b) { 
+
+ n<-data$n
+ p1<- (1-b[1]-b[2])^2
+ p2<- b[1]^2+2*b[1]*(1-b[1]-b[2])
+ p3<- b[2]^2+2*b[2]*(1-b[1]-b[2])
+ p4<- 2*b[1]*b[2]
+ l<-(p1^n[1])*(p2^n[2])*(p3^n[3])*(p4^n[4])
+ l
+}
+
+n=435
+opt1<- optim(par = c(0.2,0.01),data=dat1, fn=f1, method= "BFGS", hessian=T,control = list(fnscale=-1))
+M=1000
+theta<-matrix(0,nrow=M,ncol=2)
+u1<-0
+z11<-0
+z12<-0
+theta[1,]<-opt1$par
+a<-rep(0,M)
+theta_star<-matrix(0,nrow=M,ncol=2)
+pd<-matrix(0,nrow=M,ncol=2)
+
+h<-function(theta1,theta2){
+if(theta1>=0 &theta2>=0 &(theta1+theta2)<=1)
+{return(2)}
+else
+{return(0)}
+}
+
+for(i in 1:(M-1))
+{
+u1[i]<-runif(n=1,min=0,max=1)
+z11[i]<-rnorm(n=1,mean=0,sd=1)
+z12[i]<-rnorm(n=1,mean=0,sd=1)
+theta_star[i,]<-theta[i,]+1/sqrt(n)*c(z11[i],z12[i])
+a[i]<-min(1,like(dat1,theta_star[i,])*h(theta_star[i,1],theta_star[i,2])/(like(dat1,theta[i,])*h(theta[i,1],theta[i,2])))
+if(u1[i]>a[i])
+{theta[i+1,]<-theta[i,]}
+else if(u1[i]<=a[i])
+{theta[i+1,]<-theta_star[i,]}
+}
+
+c(mean(theta[,1]),mean(theta[,2]))
+c(sd(theta[,1]),sd(theta[,2]))
+quantile(theta[,1],c(0.025,0.25,0.5,0.75,0.975)) ####theta1
+quantile(theta[,2],c(0.025,0.25,0.5,0.75,0.975)) ####theta2
+
+##(b) credible interval
+
+H<-opt1$hessian
+U<-solve(-H)
+b1<-opt1$par
+se1<-sqrt(diag(U))
+quantile(theta[,1],c(0.025,0.975)) ####theta1
+c(opt1$par[1]-se1[1]*1.96, opt1$par[1]+se1[1]*1.96)
+quantile(theta[,2],c(0.025,0.975)) ####theta2
+c(opt1$par[2]-se1[2]*1.96, opt1$par[2]+se1[2]*1.96)
+
+##(c) scatter plot
+
+plot(theta)
+mean(theta[,1])
+mean(theta[,2])
+V_L<-matrix(c(var(theta[,1]),cov(theta[,1],theta[,2]),cov(theta[,1],theta[,2]),var(theta[,2])),2,2)
+V_L 
+
+opt1$par
+H<-opt1$hessian
+U<-solve(-H)
+U
+
+```
+

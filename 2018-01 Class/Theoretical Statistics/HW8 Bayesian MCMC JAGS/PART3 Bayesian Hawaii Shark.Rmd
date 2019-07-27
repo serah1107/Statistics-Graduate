@@ -1,0 +1,92 @@
+---
+title: "HW#8_PART3_182STG12¿ÀÇýÀ±"
+author: "182STG12 ¿ÀÇýÀ±"
+date: "2018³â 5¿ù 14ÀÏ"
+output: html_document
+---
+
+```{r ,WARNING=FALSE}
+
+#Part3: Hawaii Shark by Bayes
+
+library(rjags)
+library(runjags)
+library(tidyverse)
+library(optimx) 
+
+
+dat3<-read.csv(file.choose(),header=T) 
+dat3<-mutate(dat3,t=as.numeric(Days)/365.25)
+t<-dat3$t
+x<-dat3$L1
+y<-dat3$L2
+
+##(a) using jags 
+
+## Likelihood function : L
+  example_dat3 <- "model{
+  for(i in 1:length(y)) {
+    y[i]~dnorm(g[i],tau)
+   }
+## prior distribution for parameters 
+   a~dunif(0,300)
+   b~dunif(0,100)
+   sigma~dunif(0,11)
+   tau <- 1 / pow(sigma, 2)
+
+   for(i in 1:length(t)) {
+   g[i]<-a-(a-x[i])*exp(-b*t[i])
+   }
+ }"
+
+#### Running the model in JAGS
+
+model2 <- jags.model(textConnection(example_dat3), data = list(y = y,t=t,x=x),
+                               n.chains = 3, n.adapt= 2000)
+
+update(model2, 1500); ## Burnin for 1500 samples
+mcmc_samples2 <- coda.samples(model2, variable.names=c("a", "b","sigma"), 
+                                        n.iter=2000, thin=10)
+plot(mcmc_samples2)
+plot(mcmc_samples2,type="h")
+
+##(b) Bayesian Credible interval
+
+summary(mcmc_samples2)
+
+##(c) Compare with MLE
+
+f3<-function(c) { 
+
+ a<-c[1]
+ b<-c[2]
+ sigma<-c[3]
+ g<-a-(a-x)*exp(-b*t)
+ sum(dnorm(y,g,sigma,log=TRUE))
+}
+
+opt3<- optim(par = c(280,0,7),fn=f3, hessian=T,control = list(fnscale=-1))
+opt3
+opt3$par
+H2<-opt3$hessian
+U2<-solve(-H2)
+U2
+opt3$par-1.96*sqrt(diag(U2))
+opt3$par+1.96*sqrt(diag(U2))
+
+##(d) Growth Lines of Tiger Shark
+
+tt<-seq(0,30,by=0.1)
+t01<-log((282.8065-51.5)/282.8065)/ 0.3682
+Lt1<-282.8065*(1-exp(- 0.3682*(tt-t01)))
+t02<-log((opt3$par[1]-51.5)/opt3$par[1])/opt3$par[2]
+Lt2<-opt3$par[1]*(1-exp(-opt3$par[2]*(tt-t02)))
+plot(tt,Lt1,type="l",lwd=3,col="light pink",xlab="t (½Ã°£)",ylab="growth (¼ºÀå±æÀÌ)",main="Growth Curve")
+lines(tt,Lt2,lwd=3,col="light blue")
+legend("bottomright",c("bayes","mle"),col=c("light pink","light blue"),lty=1,lwd=3) 
+
+
+  
+
+
+```

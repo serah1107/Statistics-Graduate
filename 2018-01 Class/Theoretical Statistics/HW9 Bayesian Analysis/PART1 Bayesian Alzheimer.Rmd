@@ -1,0 +1,114 @@
+---
+title: "HW9 PART1"
+author: "Hye Yun Oh"
+date: "2018³â 5¿ù 18ÀÏ"
+output: html_document
+---
+
+```{r ,warning=FALSE}
+#Part1 : Alzheimer
+
+library(readxl)
+library(ggplot2)
+library(rjags)
+library(runjags)
+
+dat1_1<-read_excel("C:\\Users\\user\\Desktop\\Alzheimer.xlsx",sheet=1)
+dat1_2<-read_excel("C:\\Users\\user\\Desktop\\Alzheimer.xlsx",sheet=2)
+
+##(a) MMSE Scatter Plot
+
+ggplot(dat1_1,aes(x=t,y=y))+geom_point(aes(shape = factor(lecithin)))+geom_smooth(aes(shape = factor(lecithin)),se=FALSE)+scale_shape_manual(values=c(1,8)) 
+
+##(b) MMSE Box Plot
+
+ggplot(dat1_1,aes(x=factor(t),y=y,fill=factor(lecithin)))+geom_boxplot()+xlab("t")
+
+##(c) Fixed effects GLM
+
+y<-as.matrix(dat1_2[,-c(1,7)])
+delta<-as.matrix(dat1_2[,7])
+set.seed(1234)
+## Likelihood function : L
+  example_dat1 <- "model{
+     for(j in 1:5){
+     for(i in 1:47) {
+    y[i,j] ~ dbin(p[i,j],30)
+   }
+}
+## prior distribution for parameters 
+   a~dunif(-15,15)
+   b~dunif(-15,15)
+   c~dunif(-15,15)
+   d~dunif(-15,15)
+    for(j in 1:5){
+    for(i in 1:47) {
+   logit(p[i,j])<-a+c*delta[i,1]+(d*delta[i,1]+b)*(j-1)/12
+   }
+   }
+ }"
+
+#### Running the model in JAGS
+
+model1 <- jags.model(textConnection(example_dat1), data = list(y = y,delta=delta),
+                               n.chains = 3, n.adapt= 5000)
+
+update(model1, 5000); ## Burnin for 5000 samples
+mcmc_samples <- coda.samples(model1, variable.names=c("a", "b","c","d"), 
+                                        n.iter=2000, thin=10)
+plot(mcmc_samples[,1])
+plot(mcmc_samples[,2]) 
+plot(mcmc_samples[,3]) 
+plot(mcmc_samples[,4])  
+summary(mcmc_samples)
+
+##(d) Mixed effects Nonlinear GLM
+set.seed(1234)
+## Likelihood function : L
+  example_dat2 <- "model{
+     for(i in 1:47) {
+   	u[i]~dnorm(0,1)
+  	 alpha[i]<-a+sigma*u[i]+c*delta[i,1]
+  	 beta[i]<-b+d*delta[i,1]
+         for(j in 1:5){
+    	 y[i,j] ~ dbin(p[i,j],30)
+    	 logit(p[i,j])<-alpha[i]+beta[i]*(j-1)/12
+   	}
+   }
+## prior distribution for parameters 
+   a~dunif(-20,20)
+   b~dunif(-20,20)
+   c~dunif(-20,20)
+   d~dunif(-20,20)
+   sigma~dunif(0,20)
+ }"
+
+#### Running the model in JAGS
+
+model2 <- jags.model(textConnection(example_dat2), data = list(y = y,delta=delta),
+                               n.chains = 3, n.adapt= 5000)
+
+update(model2, 5000); ## Burnin for 5000 samples
+mcmc_samples2 <- coda.samples(model2, variable.names=c("a", "b","c","d","u","sigma","alpha"), 
+                                        n.iter=5000, thin=10)
+plot(mcmc_samples2[,1]) 
+plot(mcmc_samples2[,2])
+plot(mcmc_samples2[,3])
+plot(mcmc_samples2[,4])
+plot(mcmc_samples2[,5])
+plot(mcmc_samples2[,6])
+summary(mcmc_samples2)
+
+##(f) alpha estimate scatter plot
+
+y0<-as.matrix(dat1_2[,2])
+alpha<-as.matrix(summary(mcmc_samples2)$statistics[2:48,1])
+
+alpha_star<-log((y0+1/2)/(30-y0+1/2))
+colnames(alpha_star)<-"alpha_star"
+alpha_star
+plot(alpha_star,alpha, pch=c(8,1))
+alphaaaa<-as.data.frame(cbind(alpha_star,alpha))
+ggplot(alphaaaa,aes(x=alpha_star,y=alpha))+geom_point()+geom_abline()
+```
+
