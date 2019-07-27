@@ -62,7 +62,7 @@
 ||9. Quantile Regression|
 ||10. Multi Dimensional Scaling|
 || [Final Project](https://github.com/serah1107/Statistics-Graduate/blob/master/2019-03%20Class/Bayesian/project/DengAI%20Spread%20Prediction%20Using%20BNN%20%26%20Bayesian%20Quantile%20Regression.R)| 
-|Data Mining| [ISLR](https://github.com/serah1107/Statistics-Graduate/tree/master/2019-03%20Class/Data%20Mining/ISLR_HW) | 
+|Data Mining| [ISLR](https://github.com/serah1107/Statistics-Graduate/tree/master/2019-03%20Class/Data%20Mining/ISLR_HW)|
 || [Final Project](https://github.com/serah1107/Statistics-Graduate/tree/master/2019-03%20Class/Data%20Mining/NAVER%20Webtoon%20Popularity%20Prediction%20(Team%20Project)| 
 |Text Mining| Morphological analysis, TF-IDF, Sentimental Analysis, Topic Model and so on |
 ||[Final Project](https://github.com/serah1107/Statistics-Graduate/tree/master/2019-03%20Class/Text%20Mining/Final%20Project_Kaggle)|
