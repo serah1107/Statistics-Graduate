@@ -8,7 +8,7 @@
 |Linear Regression |Introduction_to_Linear_Regression_Analysis Mongomery | 
 |Theoretical Statistics| 1. [Suicide Rates](https://github.com/serah1107/Statistics-Graduate/tree/master/2018-01%20Class/Theoretical%20Statistics/HW1%20Suicide%20Rates)|
 ||2. [KOSPI Porfolio Optimization via Simulation](https://github.com/serah1107/Statistics-Graduate/tree/master/2018-01%20Class/Theoretical%20Statistics/HW2%20KOSPI%20Portfolio%20Optimization%20via%20Simulation)|
-||3. [HW3 EVT -KOSPI, Life Span, Precipitation Damage](https://github.com/serah1107/Statistics-Graduate/tree/master/2018-01%20Class/Theoretical%20Statistics/HW3%20EVT%20-KOSPI%2C%20Life%20Span%2C%20Precipitation%20Damage)|
+||3. [EVT -KOSPI, Life Span, Precipitation Damage](https://github.com/serah1107/Statistics-Graduate/tree/master/2018-01%20Class/Theoretical%20Statistics/HW3%20EVT%20-KOSPI%2C%20Life%20Span%2C%20Precipitation%20Damage)|
 ||4. [Probability Prediction](https://github.com/serah1107/Statistics-Graduate/tree/master/2018-01%20Class/Theoretical%20Statistics/HW4%20Probability%20Prediction)|
 ||5. [MLE Life Span](https://github.com/serah1107/Statistics-Graduate/tree/master/2018-01%20Class/Theoretical%20Statistics/HW5%20MLE%20Life%20Span)|
 ||6. [Bankruptcy Prediction](https://github.com/serah1107/Statistics-Graduate/tree/master/2018-01%20Class/Theoretical%20Statistics/HW6%20Bankruptcy%20Prediction)|
